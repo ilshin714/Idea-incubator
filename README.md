@@ -4,7 +4,7 @@ This is Idea Incubator Web Application.
 Idea Incubator is a web application that provides networking features to create new business values.
 
 
-![Screenshot1](https://dev.azure.com/iktsolution/6ddecef6-d2c3-4e3d-82bd-d2a4fc1519ea/_apis/git/repositories/3a62d847-970e-49fb-aca7-80cddaee7d71/items?path=/ideaIncubatorArchitecture.png&versionDescriptor%5BversionOptions%5D=0&versionDescriptor%5BversionType%5D=0&versionDescriptor%5Bversion%5D=main&resolveLfs=true&%24format=octetStream&api-version=5.0)
+![Screenshot1](https://github.com/ilshin714/IdeaIncubator/blob/main/ideaIncubatorArchitecture.png)
 
 # Getting Started
 1.	Installation process
