@@ -1,0 +1,52 @@
+﻿@using IdeaIncubatorBlazor.Models
+@using FluentValidation
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject IIdeaService ideaService
+@inject ProtectedSessionStorage ProtectedSessionStore
+
+<MudDialog>
+    <DialogContent>
+        <MudCard>
+            <MudForm Model="@inputIdea" @ref="@form" Validation="@(ideaValidator.ValidateValue)">
+                <MudCardContent Style="@($"color:{Colors.Grey.Lighten2};")">
+                    <MudTextField @bind-Value="inputIdea.Name"
+                                  For="@(() => inputIdea.Name)"
+                                  Immediate="true"
+                                  Label="Title"
+                                  Class="mt-5" />
+
+                    <MudTextField @bind-Value="inputIdea.Description"
+                                  For="@(() => inputIdea.Description)"
+                                  Immediate="true"
+                                  Label="Description"
+                                  Lines="5"
+                                  Class="mt-5" />
+
+                    <MudSelect @bind-Value="inputIdea.Status"
+                                Label="Status"
+                                Style="@($"color:{Colors.Teal.Lighten2};")"
+                                Immediate="true"
+                                Class="mt-5"
+                                For="@(() => inputIdea.Status)"
+                                ReadOnly="true">
+                        @foreach (IdeaStatusEnum status in Enum.GetValues(typeof(IdeaStatusEnum)))
+                        {
+                            <MudSelectItem Value="@Convert.ToInt32(status)">@status</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudTextField @bind-Value="inputIdea.Keywords"
+                                  For="@(() => inputIdea.Keywords)"
+                                  Immediate="true"
+                                  Label="Keywords"
+                                  HelperText="Please put ';' at the end of your keywords "
+                                  Class="mt-5" />     
+                </MudCardContent>
+            </MudForm>
+        </MudCard>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Style="@($"color:{Colors.Grey.Lighten2};")">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="@(async () => await Submit())">Create</MudButton>
+    </DialogActions>
+</MudDialog>

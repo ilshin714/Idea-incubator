@@ -1,0 +1,75 @@
+﻿@implements IAsyncDisposable
+
+@if (IsConnected)
+{
+    <div @ref="TextAreaRef" style="height: 395px; width: 100%;" class="overflow-auto mt-2">
+        <MudPaper MinHeight="400px" Width="100%" Class="pt-1 pb-1">
+            @if (previousMessages != null && previousMessages.Any())
+            {
+                @foreach (var previousMessage in previousMessages)
+                {
+                    <MudStack Row="true" Class="@(previousMessage.UserId == UserId ? "justify-content-end float-right talk-bubble tri-right round btm-right" : "align-items-center ")">
+                        <MudPaper Class="@(previousMessage.UserId == UserId? "d-none" : "ml-2")">
+                            <MudAvatar Color="Color.Dark">@previousMessage?.UserName?[0].ToString().ToUpper()</MudAvatar>
+                        </MudPaper>
+                        <MudPaper Class="@(previousMessage.UserId == UserId ? "justify-content-end round current-user-message" : "round member-message talk-bubble round tri-right btm-left")">
+                            <MudStack Class="@(previousMessage.UserId == UserId ? "justify-content-end round current-user-message" : "round member-message")">
+                                <MudText>@previousMessage.MessageText</MudText>
+                                <MudText Class="@(previousMessage.UserId == UserId ? "chat-date-current-user" : "chat-date")">@previousMessage.DateSent?.ToString("HH:mm | MMM dd")</MudText>
+                            </MudStack>
+                        </MudPaper>
+                    </MudStack>
+                }
+
+                @foreach (var userMessage in userMessages)
+                {
+                    <MudStack Row="true" Class="@(userMessage.IsCurrentUser ? "justify-content-end float-right talk-bubble tri-right round btm-right" : "align-items-center ")">
+                        <MudPaper Class="@(userMessage.IsCurrentUser ? "d-none" : "ml-2")">
+                            <MudAvatar Color="Color.Dark">@userMessage?.UserName?[0].ToString().ToUpper()</MudAvatar>
+                        </MudPaper>
+                        @if (IsOneOnOne == true)
+                        {
+                            <MudPaper Class="@(userMessage.IsCurrentUser ? "justify-content-end round current-user-message" : "round member-message talk-bubble round tri-right btm-left")">
+                                <MudStack Class="@(userMessage.IsCurrentUser ? "justify-content-end round current-user-message" : "round member-message")">
+                                    <MudText>@userMessage.MessageText</MudText>
+                                    <MudText Class="@(userMessage.IsCurrentUser ? "chat-date-current-user" : "chat-date")">@userMessage.DateSent?.ToString("HH:mm | MMM dd")</MudText>
+                                </MudStack>
+                            </MudPaper>
+                        }
+
+                    </MudStack>
+                }
+
+            }
+            else
+            {
+                @foreach (var userMessage in userMessages)
+                {
+                    <MudStack Row="true" Class="@(userMessage.IsCurrentUser ? "justify-content-end float-right talk-bubble tri-right round btm-right" : "align-items-center ")">
+                        <MudPaper Class="@(userMessage.IsCurrentUser ? "d-none" : "ml-2")">
+                            <MudAvatar Color="Color.Dark">@userMessage?.UserName?[0].ToString().ToUpper()</MudAvatar>
+                        </MudPaper>
+                        <MudPaper Class="@(userMessage.IsCurrentUser ? "justify-content-end round current-user-message" : "round member-message talk-bubble round tri-right btm-left")">
+                            <MudStack Class="@(userMessage.IsCurrentUser ? "justify-content-end round current-user-message" : "round member-message")">
+                                <MudText>@userMessage.MessageText</MudText>
+                                <MudText Class="@(userMessage.IsCurrentUser ? "chat-date-current-user" : "chat-date")">@userMessage.DateSent?.ToString("HH:mm | MMM dd")</MudText>
+                            </MudStack>
+                        </MudPaper>
+                    </MudStack>
+                }
+            }
+        </MudPaper>
+    </div>
+
+    <MudStack Row="true">
+        <MudGrid>
+            <MudItem xs="11">
+                <input @bind-value="Message" @bind-value:event="oninput" @onkeyup="HandleInput" class="detail-chat-comment"
+                       placeholder="Please Type Chat Comment Here and Press Ender or Click Send Button on The Right" />
+            </MudItem>
+            <MudItem xs="1" Class="d-flex align-center">
+                <MudFab Color="Color.Secondary" Class="chat-button" StartIcon="@Icons.Material.Filled.Send" IconSize="Size.Small" Size="Size.Small" OnClick="Send" Disabled="@(!IsConnected)" />
+            </MudItem>
+        </MudGrid>
+    </MudStack>
+}

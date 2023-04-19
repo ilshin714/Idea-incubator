@@ -1,0 +1,37 @@
+﻿@inject IJSRuntime JSRuntime
+@if (User != null)
+{
+    <MudForm Model="@User" @ref="@form">
+        <MudGrid>
+            <MudItem xs="12" sm="12">
+                <MudCard>
+                    <MudCardContent>
+                        <MudTextField Label="Joined Date"
+                                  @bind-Value="User.JoinDate" For="@(() => User.JoinDate)" Disabled="true" Style="color: dimgray" />
+                        <MudTextField Label="User Name" HelperText="Max. 20 characters"
+                                  @bind-Value="User.UserName" For="@(() => User.UserName)" />
+                        <MudTextField Label="Password" HelperText="Max. 20 characters, leave blank to not change" InputType="InputType.Password"
+                                  @bind-Value="newPassword"/>
+                        <MudTextField Label="Email" Class="mt-3" HelperText="Max. 50 characters"
+                                  @bind-Value="User.EmailAddress" For="@(() => User.EmailAddress)" />
+                        <MudTextField Label="Phone Number" Class="mt-3" HelperText="Max. 10 characters"
+                                  @bind-Value="User.PhoneNumber" For="@(() => User.PhoneNumber)" />
+                        <MudTextField Label="SkillSets" Class="mt-3" HelperText="Max. 50 characters, separate with ;"
+                                  @bind-Value="User.SkillSets" For="@(() => User.SkillSets)" />
+
+                        <MudCheckBox @bind-Checked="User.IsProfileVisible" Color="Color.Secondary" UnCheckedColor="Color.Default">Is this Profile Visible?: @User.IsProfileVisible</MudCheckBox>
+
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="DeleteUser" >Delete</MudButton>
+                        <MudButton Variant="Variant.Outlined" OnClick="Cancel" Class="ml-auto" Style="@($"color:{Colors.Grey.Lighten2};")">Cancel</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="@(async () => await Submit())">Update</MudButton>
+                    </MudCardActions>
+                    <MudCardActions >
+                        <MudButton Variant="Variant.Outlined" OnClick="LogoutUser" Class="ml-auto" Style="@($"color:{Colors.Grey.Lighten2};")">Logout</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    </MudForm>
+}

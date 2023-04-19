@@ -1,0 +1,73 @@
+﻿@inject IIdeaService ideaService
+@inject IRoleService roleService
+@inject IUserService userService
+
+<MudContainer Class="mt-5 p-1 chat-list" Style="height:500px; border-radius: 1.2rem; background-color:#34383A;">
+    <MudTabs Position="Position.Left" ApplyEffectsToContainer="true" Border="true" ActivePanelIndex="1" @ref="ParentTab">
+        <MudTabPanel Text="Chat List" Disabled="true" Style="color:var(--mud-palette-primary); font-size:larger;" />
+        <MudTabPanel Text="New Chat" Icon="@Icons.Material.Outlined.AddComment">
+            <MudContainer Class="detail-members-chat-item">
+                @if (Members != null)
+                {
+                    <MudDataGrid Items=@Members Dense="true" Elevation="0" SortMode="SortMode.None" Filterable="false" Class="detail-members-data-grid mt-2"
+                             Style="background-color:#34383A; color:white;">
+                        <Columns>
+                            <Column T="MemberInfo" Field="UserName" Title="User Name">
+                                <CellTemplate>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center">
+                                        <MudAvatar Color="Color.Dark">@context.Item.UserName?[0]</MudAvatar>
+                                        <MudStack Spacing="0">
+                                            <MudText Typo="Typo.subtitle1">@context.Item.UserName</MudText>
+                                        </MudStack>
+                                    </MudStack>
+                                </CellTemplate>
+                            </Column>
+                            <Column T="MemberInfo" Field="RoleId" Title="Role">
+                                <CellTemplate>
+                                    <MudText Typo="Typo.subtitle1">@Enum.GetName((UserRoleEnum)context.Item.RoleId)</MudText>
+                                </CellTemplate>
+                            </Column>
+                            <Column T="MemberInfo" Field="SkillSets" Title="Skill Sets">
+                                <CellTemplate>
+                                    <MudStack Spacing="0">
+                                        <MudText Typo="Typo.subtitle1">@context.Item.SkillSets</MudText>
+                                    </MudStack>
+                                </CellTemplate>
+                            </Column>
+                            <Column T="MemberInfo" Title="">
+
+                                <CellTemplate>
+                                    @if (context.Item.IsCurrentUser == false)
+                                    {
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Class="rounded-pill" OnClick="@(()=>StartOneOnOneChat(context.Item.UserId))">CHAT</MudButton>
+                                    }
+                                </CellTemplate>
+                            </Column>
+                        </Columns>
+                    </MudDataGrid>
+                }
+            </MudContainer>
+        </MudTabPanel>
+        <MudTabPanel Text="All Members">
+            <MudContainer Class="detail-members-chat-item">
+                <ChatMessage SelectedIdea="SelectedIdea" UserId="UserId" Members="Members"></ChatMessage>
+            </MudContainer>
+        </MudTabPanel>
+        @if (ChatGroups != null && ChatGroups.Any())
+        {
+            foreach (var chatGroup in ChatGroups)
+            {
+                if (ChatMembers.Any(m => m.ChatGroupId == chatGroup.ChatGroupId))
+                {
+                    List<ChatGroupMember> oneOnOneMembers = ChatMembers.Where(m => m.ChatGroupId == chatGroup.ChatGroupId).ToList();
+                    string title = "1:1 with " + oneOnOneMembers.Where(m => m.UserId != UserId).FirstOrDefault().User.UserName;
+                    <MudTabPanel Text="@title" ID="chatGroup.ChatGroupId">
+                        <MudContainer Class="detail-members-chat-item">
+                            <ChatMessage SelectedIdea="SelectedIdea" UserId="UserId" Members="Members" OneOnOneMembers="oneOnOneMembers"></ChatMessage>
+                        </MudContainer>
+                    </MudTabPanel>
+                }
+            }
+        }
+    </MudTabs>
+</MudContainer>

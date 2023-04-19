@@ -1,0 +1,73 @@
+﻿@using static IdeaIncubatorBlazor.Views.Components.DetailDescription
+<MudText Typo="Typo.subtitle2" Class="ml-1" Style="color: #90A4AE">COMMENT</MudText>
+<br />
+
+@if (Comments != null)
+{
+    foreach (var comment in Comments)
+    {
+        <MudGrid Class="mb-2">
+            <MudStack Row="true" AlignItems="AlignItems.Center" Style="width:95%" Spacing="3">
+                <MudItem xs="1">
+                    <MudAvatar Class="ml-5" Size="Size.Small" Color="Color.Surface">@Users.FirstOrDefault(u => u.UserId == comment.UserId).UserName?[0]</MudAvatar>
+                </MudItem>
+                <MudItem xs="8">
+                    <MudStack Row="true">
+                        <MudText Style="color:#90A4AE; font-weight:100;">@Users.FirstOrDefault(u => u.UserId == comment.UserId).UserName</MudText>
+                        <MudText Style="color:#90A4AE; font-weight:100;">@comment.DateCreated.ToString("D")</MudText>
+                    </MudStack>
+                </MudItem>
+                <MudItem xs="2">
+                    @if (comment.UserId == CurrentUserId)
+                    {
+                        <MudTooltip Text="Edit">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled" OnClick="@((e)=> EditComment(comment.CommentId))" />
+                        </MudTooltip>
+                        <MudTooltip Text="Delete">
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Color="Color.Default" Variant="Variant.Filled" OnClick="@((e)=> DeleteComment(comment.CommentId))" />
+                        </MudTooltip>
+                    }
+                </MudItem>
+            </MudStack>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Style="width:95%" Spacing="3">
+                <MudItem xs="1">
+                </MudItem>
+                <MudItem xs="10">
+                    <MudText Style="color:#90A4AE;">@comment.CommentText</MudText>
+                </MudItem>
+            </MudStack>
+        </MudGrid>
+    }
+}
+
+
+@code {
+
+    [Parameter]
+    public List<Comment> Comments { get; set; }
+
+    [Parameter]
+    public List<User> Users { get; set; }
+
+    [Parameter]
+    public int CurrentUserId { get; set; }
+
+    [Parameter]
+    public EventCallback DoEditComment { get; set; }
+
+    [Parameter]
+    public EventCallback DoDeleteComment { get; set; }
+
+    private async Task EditComment(int commentId)
+    {
+        await DoEditComment.InvokeAsync(commentId);
+    }
+
+    private async Task DeleteComment(int commentId)
+    {
+        await DoDeleteComment.InvokeAsync(commentId);
+    }
+
+    [Inject]
+    IUserService userService { get; set; }
+}

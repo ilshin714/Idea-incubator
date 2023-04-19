@@ -1,0 +1,28 @@
+﻿::deep .mud-card {
+    color: #fff;
+    background-color: #495963;
+}
+
+::deep .idea-mud-chip {
+    background-color: #fff;
+    color: #004D40;
+}
+
+::deep .idea-mud-chip-status {
+    background-color: #FFBF00;
+    color: #004D40;
+}
+
+::deep .idea-mud-chip-tag {
+    background-color: #424242;
+    color: #fff;
+    border-radius: 5px;
+}
+
+::deep .mud-card-content {
+    padding: 8px;
+}
+
+::deep .mud-card-header {
+    padding-bottom: 0px;
+}

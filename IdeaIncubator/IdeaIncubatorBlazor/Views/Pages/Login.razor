@@ -1,0 +1,53 @@
+﻿@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage ProtectedSessionStore
+@inject IUserService userService
+@inject NavigationManager Navigation
+@page "/login"
+<MudPaper Height="100%" Width="100%" Elevation="3" Class="d-flex vh-100 ">
+    <MudPaper Class="z-10 absolute d-flex vh-100 opacity-50" Width="30%" MinWidth="550px" Square="true">
+    </MudPaper>
+    <MudPaper Class="z-20 d-flex absolute vh-100 " Width="30%" MinWidth="550px" Style="background-color: transparent" Square="true">
+        <MudContainer Class="align-self-center flex-column d-flex justify-content-center w-100">
+            @if (userLoggedIn)
+            {
+                <MudText Typo="Typo.h5" Class="mb-1">User's profile page will be displayed</MudText>
+                <MudButton Variant="Variant.Outlined" OnClick="Logout" Typo="Typo.body1">Log out</MudButton>
+            }
+            else
+            {
+                <MudContainer Class="align-self-center d-flex justify-content-center w-100">
+                    <MudIcon Icon="@Icons.Material.Filled.LightbulbCircle" Color="Color.Primary" Class="mr-2 mt-1" Style="width: 48px; height: 48px" />
+                    <MudText Typo="Typo.h3" Color="Color.Primary" Class="font-weight-bold">IDEA INCUBATOR</MudText>
+                </MudContainer>
+
+                <MudGrid Class="mt-10">
+                    <MudItem xs="12" sm="12">
+                        <MudPaper Class="pa-4 w-75 float-end mr-5" Style="background-color: transparent">
+                            <MudForm>
+                                <MudTextField T="string" Class="testTxtLoginUserName"  Label="User Name" Required="true" RequiredError="User name is required!" OnlyValidateIfDirty="true"
+                                          HelperText="Please type your user name" Variant="Variant.Text" HelperTextOnFocus="true" AutoFocus="true"
+                                          Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Person" AdornmentColor="Color.Secondary"
+                                          @ref="UserNameTextBox" @bind-Value="UserName" />
+                                <MudTextField T="string" Class = "testTxtLoginPassword" InputType="InputType.Password" Label="User Password" Required="true" RequiredError="User password is required!" OnlyValidateIfDirty="true"
+                                          HelperText="Please type your password" Variant="Variant.Text" HelperTextOnFocus="true"
+                                          Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Password" AdornmentColor="Color.Secondary"
+                                          @ref="PasswordTextBox" @bind-Value="Password" />
+                                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Large" Class="ml-auto w-100 mt-10 rounded-pill testButtonLogin"
+                                       OnClick="@((e) => DoLogin())">Login</MudButton>
+
+                            </MudForm>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Large" Class="ml-auto w-100 mt-10 rounded-pill"
+                                   OnClick="@((e) => OpenUserRegistrationDialog(maxWidthForIdeaCreation))">Register</MudButton>
+                            @if(UseMicrosoftIdentity.Equals("1")) {
+                                <MudButton StartIcon="@Icons.Custom.Brands.Microsoft" Variant="Variant.Outlined" Color="Color.Warning" Size="Size.Large" Class="ml-auto w-100 mt-10 rounded-pill"
+                                   OnClick="@((e) => DoMicrosoftLogin())">Login With Microsoft</MudButton>
+                            }
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            }
+            
+        </MudContainer>
+    </MudPaper>
+    <MudImage Class="z-0 absolute w-100" Src="/images/login.png" Alt="Login Background Image" Height="1080" />
+</MudPaper>

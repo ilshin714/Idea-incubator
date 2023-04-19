@@ -1,0 +1,77 @@
+﻿@inject IUserService userService
+@inject IIdeaService ideaService
+@using IdeaIncubatorBlazor.Models;
+<MudContainer Class="mt-16 mud-container-idea" @onclick="OpenIdeaDetailDialog">
+    <MudGrid Class="mt-8 mud-grid-idea">
+        <MudItem xs="12" sm="12" md="12">
+            <div>
+                <MudCard Elevation="25" Class="rounded-lg pb-4">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Secondary">@Provider.UserName[0]</MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.body1">@Provider.UserName</MudText>
+                            <MudText Typo="Typo.body2">@ParamIdea.CreatedDate?.ToString("D")</MudText>
+                        </CardHeaderContent>
+                        <ChildContent>                            
+                            <MudTooltip Text="Collaborators">
+                                <MudStack Row="true" AlignItems="AlignItems.Center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Group" Size="Size.Large" Style="color:#212121;" />
+                                    <MudText Style="color:#212121;">@CollaboratorsCount Joined</MudText>
+                                </MudStack>
+                            </MudTooltip>
+                        </ChildContent>
+                    </MudCardHeader>
+                    <MudDivider Class="my-3"/>
+                    <MudCardContent Class="m-1">
+                        <MudText Typo="Typo.h4" Class="mb-1" Color="Color.Primary">@ParamIdea.Name</MudText>
+                        <MudText Typo="Typo.body2" Class="idea-description">@ParamIdea.Description</MudText>
+                    </MudCardContent>
+
+                    <MudCardContent>
+                        @switch (@ParamIdea.Status)
+                        {
+                            case (int)IdeaStatusEnum.Initial:
+                                <MudChip Color="Color.Info" Text="Initial" Size="Size.Large"/>
+                                break;
+                            case (int)IdeaStatusEnum.Active:
+                                <MudChip Color="Color.Warning" Text="Active" Size="Size.Large" />
+                                break;
+                            case (int)IdeaStatusEnum.OnHold:
+                                <MudChip Style="background-color:dimgray; color:white;" Text="On Hold" Size="Size.Large" />
+                                break;
+                            case (int)IdeaStatusEnum.Completed:
+                                <MudChip Color="Color.Success" Text="Completed" Size="Size.Large" />
+                                break;
+                            case (int)IdeaStatusEnum.Cancelled:
+                                <MudChip Color="Color.Error" Text="Cancelled" Size="Size.Large" />
+                                break;
+                        }
+                    </MudCardContent>
+
+                    <MudCardContent>
+                        @foreach (string tag in ParamIdea.Keywords?.Split(";"))
+                        {
+                            @if (!String.IsNullOrWhiteSpace(tag))
+                            {
+                                <MudChip Class="idea-mud-chip-tag">@tag</MudChip>
+                            }
+                        }
+                    </MudCardContent>
+                    <MudCardActions Class="mt-2">
+                        <MudTooltip Text="Add To Favourites">
+                            <MudIconButton Icon="@Icons.Material.Filled.Favorite" Size="Size.Medium" Color="@FavoriteButtonColor" Class="m-0" OnClick="ClickFavorite" />
+                        </MudTooltip>
+                        <MudTooltip Text="Vote">
+                            <MudBadge Content="@ParamIdea.Vote" Color="Color.Secondary" Overlap="true" Class="m-0">
+                                <MudIconButton Icon="@Icons.Material.Filled.ThumbUp" Size="Size.Medium" Color="@VotedColor" OnClick="ClickVote" />
+                            </MudBadge>
+                        </MudTooltip>                        
+                        <MudButton Variant="Variant.Text" Style="color:#BDBDBD" OnClick="OpenIdeaDetailDialog" Class="ml-auto">LEARN MORE</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </div>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

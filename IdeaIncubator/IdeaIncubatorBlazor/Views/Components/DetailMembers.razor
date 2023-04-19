@@ -1,0 +1,121 @@
+﻿@inject IIdeaService ideaService
+@inject IRoleService roleService
+@inject IUserIdeaRoleService userIdeaRoleService
+@inject ISnackbar Snackbar
+
+@if (Members != null)
+{
+    <MudContainer Class="mt-5">
+        <MudPaper MaxHeight="500px"  Class="p-4 detail-members-mud-paper" Elevation="0">
+            <MudStack Spacing="0">
+                @* Member DataGrid *@
+                <MudPaper Elevation="0" Style="margin-top:-15px;">
+                    <MudDataGrid Items=@Members Dense="true" Class="detail-members-data-grid" Elevation="0" Height="250px" SortMode="SortMode.None" Filterable="false">
+                        <Columns>
+                            <Column T="MemberInfo" Field="UserName" Title="User Name">
+                                <CellTemplate>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center">
+                                        <MudAvatar Color="Color.Dark">@context.Item.UserName?[0]</MudAvatar>
+                                        <MudText Typo="Typo.subtitle1">@context.Item.UserName</MudText>
+                                        @if (!_IsOutsider && context.Item.UserId != LoggedInUserId && context.Item.IsProfileVisible)
+                                        {
+                                            <MudLink Href="@($"mailto:{context.Item.EmailAddress}?subject=RE: {SelectedIdea.Name}&body=%0D%0A%0D%0A *** This mail is generated from Idea Incubator ***")">
+                                                <MudIconButton Icon="@Icons.Material.Filled.MailOutline" Color="Color.Secondary" />
+                                            </MudLink>
+                                        }                                        
+                                    </MudStack>
+                                </CellTemplate>
+                            </Column>
+                            <Column T="MemberInfo" Field="RoleId" Title="Role">
+                                <CellTemplate>
+                                    @if (!IsProviderUser)
+                                    {
+                                        <MudText Typo="Typo.subtitle1">@Enum.GetName((UserRoleEnum)context.Item.RoleId)</MudText>
+                                    }
+                                    else
+                                    {
+                                        @if (context.Item.RoleId == (int)UserRoleEnum.Provider)
+                                        {
+                                            <MudText Typo="Typo.subtitle1">@UserRoleEnum.Provider.ToString()</MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudSelect T="Int32" @bind-Value="context.Item.RoleId" SelectedValuesChanged="(selected) => SelectedRoleChanged(selected.First(), context.Item)">
+                                                <MudSelectItem Value="@Convert.ToInt32(UserRoleEnum.None)">@UserRoleEnum.None</MudSelectItem>
+                                                <MudSelectItem Value="@Convert.ToInt32(UserRoleEnum.Collaborator1)">@UserRoleEnum.Collaborator1</MudSelectItem>
+                                                <MudSelectItem Value="@Convert.ToInt32(UserRoleEnum.Collaborator2)">@UserRoleEnum.Collaborator2</MudSelectItem>
+                                            </MudSelect>
+                                        }
+                                    }
+                                </CellTemplate>
+                            
+                            </Column>
+                                <Column T="MemberInfo" Field="PrivilegeLevel" Title="Privilege Level">
+                                <CellTemplate>
+                                    <MudSlider TickMarks="true" TickMarkLabels="@labels" Min="0" Max="10" Step="1" @bind-Value="context.Item.PrivilegeLevel" Disabled="true" />
+                                </CellTemplate>
+                            </Column>
+                            <Column T="MemberInfo" Field="SkillSets" Title="Skill Sets">
+                                <CellTemplate>
+                                    <MudText Typo="Typo.subtitle1" >@context.Item.SkillSets</MudText>
+                                </CellTemplate>
+                            </Column>
+                        </Columns>
+                    </MudDataGrid>                    
+                </MudPaper>
+                <div class="text-center" Style="margin-top:10px;" hidden="@IsProviderUser.Equals(false)">
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Class="rounded-pill" OnClick="UpdatePrivilege">SAVE</MudButton>
+                </div>
+                @* Requester DataGrid *@
+                @if (IsProviderUser)
+                {
+                    <MudDivider Class="my-3 mt-2" />
+                    <MudText Typo="Typo.h6" Color="Color.Secondary">Join Request</MudText>
+                    <MudPaper Elevation="0">
+                        <MudDataGrid Items=@Requesters Dense="true" Class="detail-members-data-grid d-flex" Elevation="0" SortMode="SortMode.None" Filterable="false">
+                            <Columns>
+                                <Column T="MemberInfo" Field="UserName" Title="User Name">
+                                    <CellTemplate>
+                                        <MudStack Row="true" AlignItems="AlignItems.Center">
+                                            <MudAvatar Color="Color.Secondary">@context.Item.UserName[0]</MudAvatar>
+                                            <MudText Typo="Typo.subtitle1">@context.Item.UserName</MudText>
+                                            @if (context.Item.IsProfileVisible)
+                                            {
+                                                <MudLink Href="@($"mailto:{context.Item.EmailAddress}?subject=RE: {SelectedIdea.Name}&body=%0D%0A%0D%0A *** This mail is generated from Idea Incubator ***")">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.MailOutline" Color="Color.Secondary" />
+                                                </MudLink>
+                                            }
+                                        </MudStack>
+                                    </CellTemplate>
+                                </Column>
+                                <Column T="MemberInfo" Field="SkillSets" Title="Skill Sets">
+                                    <CellTemplate>
+                                        <MudStack Spacing="0">
+                                            <MudText Typo="Typo.subtitle1">@context.Item.SkillSets</MudText>
+                                        </MudStack>
+                                    </CellTemplate>
+                                </Column>
+                                <Column T="MemberInfo" Title="Accept">
+                                    <CellTemplate>
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Class="rounded-pill" OnClick="() => RespondToRequest(context.Item, (int)UserRoleEnum.None)">ACCEPT</MudButton>
+                                    </CellTemplate>
+                                </Column>
+                                <Column T="MemberInfo" Title="Reject">
+                                    <CellTemplate>
+                                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Class="rounded-pill" OnClick="() => RespondToRequest(context.Item, (int)UserRoleEnum.Rejected)">REJECT</MudButton>
+                                    </CellTemplate>
+                                </Column>
+                            </Columns>
+                        </MudDataGrid>
+                        @if (!_IsJoinRequested)
+                        {
+                            <div class="text-center">
+                                <MudText Typo="Typo.subtitle1" Color="Color.Dark">... 0 Request ...</MudText>
+                            </div>
+                        }
+                    </MudPaper>
+                }
+            </MudStack>         
+        </MudPaper>
+    </MudContainer>
+}

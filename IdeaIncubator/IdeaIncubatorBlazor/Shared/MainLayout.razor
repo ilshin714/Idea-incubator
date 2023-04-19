@@ -1,0 +1,123 @@
+﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using System.Security.Principal
+@inject ProtectedSessionStorage ProtectedSessionStore
+@inject NavigationManager UriHelper
+@inject IdeaIncubatorBlazor.Services.Users.IUserService userService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IDialogService dialogService
+
+<MudThemeProvider DefaultScrollbar="true" Theme="MyCustomTheme" />
+
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<PageTitle>IdeaIncubatorBlazor</PageTitle>
+
+<MudLayout Style="@($"background-color:{Colors.Grey.Darken4}; color:{Colors.Teal.Accent2}")">
+    <MudAppBar Elevation="1" Style="@($"background-color:{Colors.Grey.Darken4}; color:{Colors.Teal.Accent2}")">
+        <MudButton StartIcon="@Icons.Material.Filled.LightbulbCircle" Color="Color.Secondary" OnClick="DirectToIndex" >
+            <MudText Typo="Typo.h5" Class="ml-3 font-weight-bold">IDEA INCUBATOR</MudText>
+        </MudButton>  
+        <MudSpacer />
+        <MudButton StartIcon="@Icons.Material.Filled.Person" Color="Color.Inherit" Edge="Edge.End" OnClick="DirectToLogin">
+            <MudText Typo="Typo.h6" Class="m-3">@DisplayedUsername</MudText>
+        </MudButton>
+    </MudAppBar>
+    <MudMainContent Style="@($"background-color:{Colors.Grey.Darken4}; color:{Colors.Teal.Accent2}")">
+        <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+
+    private string DisplayedUsername;
+    MudTheme MyCustomTheme = new MudTheme()
+        {
+            Palette = new Palette()
+            {
+                Surface = Colors.Grey.Darken4,
+                Dark = Colors.BlueGrey.Darken2,
+                Primary = Colors.Teal.Accent2,
+                Secondary = Colors.Teal.Lighten2,
+                AppbarBackground = Colors.Grey.Darken4,
+                GrayLight = Colors.BlueGrey.Lighten2,
+                White = Colors.Grey.Lighten5,
+                TextSecondary = Colors.Teal.Lighten2,
+                TextPrimary = Colors.Teal.Accent2,
+                Info = Colors.BlueGrey.Lighten2,
+                ActionDisabled = Colors.BlueGrey.Lighten2,
+            },
+            LayoutProperties = new LayoutProperties()
+            {
+                DefaultBorderRadius = "24px"
+            }
+        };
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            string result = "";
+            string tempId = (await ProtectedSessionStore.GetAsync<string>("UserId")).Value ?? "";
+            if (tempId != "" && tempId != "0")
+            {
+                result = userService.GetUser(Convert.ToInt32(tempId)).UserName;
+            } else
+            {
+                string SSOState = (await ProtectedSessionStore.GetAsync<string>("MicrosoftSSOState")).Value ?? "";
+
+                if (authenticationState is not null && SSOState.Equals("1"))
+                {
+                    var authState = await authenticationState;
+                    var user = authState?.User;
+
+                    if (user?.Identity is not null && user.Identity.IsAuthenticated)
+                    {
+                        User tempUser = userService.GetUserByEmail(user.Identity.Name);
+                        if (tempUser is not null)
+                        {
+                            await ProtectedSessionStore.SetAsync("MicrosoftSSOState", "2");
+                            await ProtectedSessionStore.SetAsync("UserId", tempUser.UserId.ToString());
+                            UriHelper.NavigateTo("/", true);
+                        }
+                        else
+                        {
+                            bool? registerUser = await dialogService.ShowMessageBox(
+                                    "Registration Required",
+                                    user.Identity.Name + " is not registered and registration is required, please register.",
+                                    yesText: "Register", cancelText: "Cancel",
+                                    options: new DialogOptions() { FullWidth = true, MaxWidth = MaxWidth.Small }
+                                    );
+                            if (registerUser == true)
+                            {
+                                await ProtectedSessionStore.SetAsync("DoRegister", "1");
+                                await ProtectedSessionStore.SetAsync("RegisterEmail", user.Identity.Name);
+                                UriHelper.NavigateTo("login");
+                            }
+                        }
+                    }
+                }
+            }
+            DisplayedUsername = result;
+            StateHasChanged();
+        }
+    }
+
+    protected void DirectToLogin()
+    {
+        if (string.IsNullOrEmpty(DisplayedUsername))
+            UriHelper.NavigateTo("login");
+        else
+            UriHelper.NavigateTo("/profile");
+    }
+
+    protected void DirectToIndex() => UriHelper.NavigateTo("/");
+}

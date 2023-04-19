@@ -1,0 +1,11 @@
+﻿<MudStack Row="true" AlignItems="AlignItems.Center">
+    <MudText Class="w-100"><h3>@theContent.Name</h3></MudText>
+</MudStack>
+<MudStack Row="true" AlignItems="AlignItems.Center">
+    <MudText Class="w-100">@theContent.Description</MudText>
+</MudStack>
+
+@code {
+    [Parameter]
+    public Content theContent { get; set; }
+}

@@ -1,0 +1,23 @@
+﻿<MudForm Model="@inputContent">
+    <MudTextField @bind-Value="inputContent.Name"
+                    For="@(() => inputContent.Name)"
+                    Immediate="true"
+                    Label="Title"
+                    Class="mt-12" />
+
+    <MudTextField @bind-Value="inputContent.Description"
+                    For="@(() => inputContent.Description)"
+                    Immediate="true"
+                    Label="Description"
+                    Lines="5"
+                    Class="mt-12" />
+    
+        <MudSlider Immediate="true" TickMarks="true" TickMarkLabels="@labels" Min="0" Max="10" Step="1" @bind-Value="inputContent.DisclosureLevel">Disclosure Level</MudSlider>
+</MudForm>
+
+@code {
+    [Parameter]
+    public Content inputContent { get; set; }
+    string[] labels = new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10" };
+
+}

@@ -1,0 +1,68 @@
+﻿@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage ProtectedSessionStore
+@inject IUserService userService
+@inject IIdeaService ideaService
+@page "/"
+
+@if (IsLoading)
+{
+    <MudContainer Class="d-flex mt-8 justify-content-center align-items-center vh-100" MaxWidth="MaxWidth.Small">
+        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+    </MudContainer>
+}
+else
+{
+    <MudContainer Class="d-flex mt-8" MaxWidth="MaxWidth.ExtraExtraLarge">
+        @if (userLoggedIn)
+        {
+            <MudButton Variant="Variant.Outlined" Class="rounded-lg mt-1 ml-auto" EndIcon="@Icons.Material.Filled.Add" Color="Color.Default"
+               Size="Size.Large" OnClick="@((e) => OpenIdeaCreationDialog(maxWidthForIdeaCreation))">Create Idea</MudButton>
+        }
+    </MudContainer>
+
+    <MudGrid Justify="Justify.Center" Class="p-2" Spacing="6">
+        <MudItem xs="4" Class="d-flex">
+            <MudTextField Class="mr-2" Style="border-radius: 24px; margin-right: 16px;"
+                      T="string" Label="Search" HelperText="Search projects or ideas"
+                      HelperTextOnFocus="true" Variant="Variant.Outlined" @bind-Value="SearchInput" />
+            <MudFab Color="Color.Secondary" Class="mt-1" StartIcon="@Icons.Material.Filled.Search" Size="Size.Large" OnClick="Search" />
+        </MudItem>
+        <MudItem xs="2">
+            <MudSelect T="string" @bind-Value="SortBy" Label="Sort" AnchorOrigin="Origin.BottomCenter" SelectedValuesChanged="SortIdea">
+                <MudSelectItem Value="@("None")" />
+                <MudSelectItem Value="@("Latest")" />
+                <MudSelectItem Value="@("Most Liked")" />
+                <MudSelectItem Value="@("Collaborators")" />
+            </MudSelect>
+        </MudItem>
+    </MudGrid>
+
+    <MudContainer Class="d-flex mud-container-index-idea" MaxWidth="MaxWidth.ExtraExtraLarge">
+        @if (IdeaDisplayContents is null || IdeaDisplayContents.Count == 0)
+        {
+            <p><em>... 0 idea found ... </em></p>
+        }
+        else
+        {
+            foreach (var _idea in IdeaDisplayContents)
+            {
+                if (_idea.IsWishList == true && _idea.IsVoted == true)
+                {
+                    <IdeaComponent UserId="UserId" FavoriteButtonColor="Color.Error" VotedColor="Color.Primary" ParamIdea="_idea.Idea" OnFavoriteButtonClicked="OnFavoriteClicked" OnVoteButtonClicked="OnVoteClicked" />
+                }
+                else if (_idea.IsWishList == true && _idea.IsVoted == false)
+                {
+                    <IdeaComponent UserId="UserId" FavoriteButtonColor="Color.Error" VotedColor="Color.Default" ParamIdea="_idea.Idea" OnFavoriteButtonClicked="OnFavoriteClicked" OnVoteButtonClicked="OnVoteClicked" />
+                }
+                else if (_idea.IsWishList == false && _idea.IsVoted == true)
+                {
+                    <IdeaComponent UserId="UserId" FavoriteButtonColor="Color.Default" VotedColor="Color.Primary" ParamIdea="_idea.Idea" OnFavoriteButtonClicked="OnFavoriteClicked" OnVoteButtonClicked="OnVoteClicked" />
+                }
+                else
+                {
+                    <IdeaComponent UserId="UserId" FavoriteButtonColor="Color.Default" VotedColor="Color.Default" ParamIdea="_idea.Idea" OnFavoriteButtonClicked="OnFavoriteClicked" OnVoteButtonClicked="OnVoteClicked" />
+                }
+            }
+        }
+    </MudContainer>
+}

@@ -1,0 +1,44 @@
+﻿@inject IUserService userService
+@inject ProtectedSessionStorage ProtectedSessionStore
+@using FluentValidation
+@using IdeaIncubatorBlazor.Models
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+
+<MudDialog>
+    <DialogContent>
+        <MudCard>
+            <MudForm Model="@inputUser" Validation="@(userValidator.ValidateValue)" @ref="@form">
+                <MudCardContent>
+                    <MudTextField @bind-Value="inputUser.UserName"
+                                  For="@(() => inputUser.UserName)"
+                                  Immediate="true"
+                                  Label="User Name"
+                                  AutoFocus=true />
+
+                    <MudTextField @bind-Value="inputUser.EmailAddress"
+                                  For="@(() => inputUser.EmailAddress)"
+                                  Immediate="true"
+                                  Label="Email Address" />
+
+                    <MudTextField @bind-Value="inputUser.Password"
+                                  For="@(() => inputUser.Password)"
+                                  Immediate="true"
+                                  Label="Password"
+                                  InputType="InputType.Password" />
+
+                    <MudTextField @bind-Value="inputUser.PhoneNumber"
+                                  For="@(() => inputUser.PhoneNumber)"
+                                  Immediate="true"
+                                  Placeholder="999-999-9999"
+                                  Label="Phone Number" />
+
+                </MudCardContent>
+            </MudForm>
+        </MudCard>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Style="@($"color:{Colors.Grey.Lighten2};")">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="@(async () => await Submit())">Register</MudButton>
+    </DialogActions>
+
+</MudDialog>

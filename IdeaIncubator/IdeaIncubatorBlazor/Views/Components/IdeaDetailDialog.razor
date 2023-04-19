@@ -1,0 +1,35 @@
+﻿<MudDialog Style="min-height:500px; max-height: 100%; overflow-y: scroll">
+    <DialogContent>
+        <MudText Typo="Typo.h4" Class="mb-2" Color="Color.Primary">@SelectedIdea.Name</MudText>
+        <MudContainer>
+            <MudTabs Elevation="2" PanelClass="pa-6" ApplyEffectsToContainer="true">
+                
+                @* Description *@
+                <MudTabPanel Class="rounded-l-lg" Icon="@Icons.Material.Filled.Lightbulb" Text="Description" tabindex="1">
+                    <DetailDescription SelectedIdea="SelectedIdea" Provider="Provider" IsOutSider="IsOutSider" OnIdeaChanged=@(() => UpdateDialogHeader())></DetailDescription>
+                </MudTabPanel>
+
+                @* Members *@
+                <MudTabPanel @ref="MembersTab" Icon="@Icons.Material.Filled.People" Text="Members" tabindex="2">
+                    <DetailMembers SelectedIdea="SelectedIdea" IsProviderUser="IsProviderUser" LoggedInUserId="UserId"></DetailMembers>
+                </MudTabPanel>
+
+                @* Chat -- Only members can see it*@
+                @if (!IsOutSider)
+                {
+                    <MudTabPanel Class="rounded-r-lg" Icon="@Icons.Material.Filled.Chat" Text="Chat" tabindex="3">
+                        <DetailChat SelectedIdea="SelectedIdea" UserId="UserId" Participants="Participants" Provider="Provider"></DetailChat>
+                    </MudTabPanel>
+                }                
+            </MudTabs>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        @if(IsOutSider && UserId != 0)
+        {
+            <MudButton @ref="JoinButton" Color="Color.Secondary" Variant="Variant.Filled" OnClick="JoinIdea">@JoinIdeaButtonText</MudButton>
+        }
+        <MudButton Color="Color.Info" OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>

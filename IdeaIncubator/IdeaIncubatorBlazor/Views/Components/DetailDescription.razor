@@ -1,0 +1,215 @@
+﻿@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+@inject NavigationManager UriHelper
+@inject IDialogService dialogService
+@inject ISnackbar Snackbar
+
+@if (_IsLoading)
+{
+    <MudContainer Class="d-flex mt-8 justify-content-center align-items-center vh-100" MaxWidth="MaxWidth.Small">
+        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+    </MudContainer>
+}
+else
+{
+    <MudContainer Class="mt-5 p-1">
+    <MudGrid Spacing="4">
+        <MudItem xs="12">
+            @* Idea Detail Description *@
+            @if (!_ShowEditForm)
+            {
+                <MudPaper Style="background-color:#34383A; min-height:200px;" Class="p-4">
+                    <MudStack Justify="Justify.SpaceBetween">
+                        <MudStack Row="true" AlignItems="AlignItems.Center" >
+                            <MudAvatar Color="Color.Secondary">@Provider?.UserName?[0]</MudAvatar>
+                            <MudStack Row="true">
+                                <MudStack Spacing="0">
+                                    <MudText Typo="Typo.subtitle1" Style="color:#fff;">@Provider.UserName</MudText>
+                                    <MudText Typo="Typo.body2" Style="color:#fff;">@SelectedIdea.CreatedDate?.ToString("D")</MudText>
+                                </MudStack>
+                                @if (!_IsProviderUser && (bool)Provider.IsProfileVisible)
+                                {
+                                    <MudLink Href="@($"mailto:{Provider.EmailAddress}?subject=RE: {SelectedIdea.Name}&body=%0D%0A%0D%0A *** This mail is generated from Idea Incubator ***")">
+                                        <MudIconButton Icon="@Icons.Material.Filled.MailOutline" Color="Color.Secondary" />
+                                    </MudLink>
+                                }
+                            </MudStack>
+                            <MudStack Style="height:50px;" Class="ml-auto align-bottom">
+                                <MudStack Row="true" Spacing="0">
+                                    @if (_IsWishlist)
+                                        {
+                                            <MudTooltip Text="Remove from Favourites">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Favorite" Size="Size.Medium" Color="Color.Error" Class="m-0" OnClick="ClickFavorite" />
+                                            </MudTooltip>
+                                        }
+                                        else
+                                        {
+                                            <MudTooltip Text="Add to Favourites">
+                                                <MudIconButton Icon="@Icons.Material.Filled.Favorite" Size="Size.Medium" Color="Color.Default" Class="m-0" OnClick="ClickFavorite" />
+                                            </MudTooltip>
+                                        }
+                                        
+                                        @if (_IsVoted)
+                                        {
+                                            <MudTooltip Text="Unvote">
+                                                <MudBadge Content="@SelectedIdea.Vote" Color="Color.Secondary" Overlap="true" Class="m-0">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.ThumbUp" Size="Size.Medium" Color="Color.Primary" OnClick="ClickVote" />
+                                                </MudBadge>
+                                            </MudTooltip>
+                                        }
+                                        else
+                                        {
+                                            <MudTooltip Text="Vote">
+                                        <MudBadge Content="@SelectedIdea.Vote" Color="Color.Secondary" Overlap="true" Class="m-0">
+                                                    <MudIconButton Icon="@Icons.Material.Filled.ThumbUp" Size="Size.Medium" Color="Color.Default" OnClick="ClickVote" />
+                                                </MudBadge>
+                                            </MudTooltip>
+                                        }                                      
+                                </MudStack>
+                            </MudStack>
+                        </MudStack>
+                        <MudStack Class="overflow-auto">
+                            <MudPaper Style="background-color:#34383A;" Elevation="0">
+                                <MudText Typo="Typo.body1" Style="color:#fff;">@SelectedIdea.Description</MudText>
+                            </MudPaper>
+                        </MudStack>
+                        <MudStack Spacing="1">
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexStart" Spacing="4">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexStart" Spacing="1">
+                                    <MudText Typo="Typo.body1" Style="color:#fff;">Status: </MudText>
+                                    <MudText Typo="Typo.body1" Color="Color.Warning">@Enum.GetName(typeof(IdeaStatusEnum), SelectedIdea.Status) </MudText>
+                                </MudStack>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.FlexStart" Spacing="0">
+                                    <MudText Typo="Typo.body1" Style="color:#fff;">Tags: </MudText>
+                                    <MudStack Row="true" Spacing="1">
+                                        @foreach (string tag in SelectedIdea.Keywords.Split(";"))
+                                        {
+                                            @if (!String.IsNullOrWhiteSpace(tag))
+                                            {
+                                                <MudChip Style="background-color: #424242; color:#fff; border-radius: 5px;">@tag</MudChip>
+                                            }
+                                        }
+                                    </MudStack>
+                                </MudStack>
+                                <div class="text-end w-100" hidden="@_IsProviderUser.Equals(false)">
+                                    <MudButton Color="Color.Primary" Variant="Variant.Outlined" Class="m-1" OnClick="OpenEditForm">EDIT</MudButton>
+                                    <MudButton Color="Color.Error" Variant="Variant.Filled" Class="m-1" OnClick="DeleteIdea">DELETE</MudButton>
+                                </div>
+                            </MudStack>
+                        </MudStack>
+                    </MudStack>
+                </MudPaper>
+            }
+            @* Idea Detail Description - EDIT MODE *@
+            else
+            {
+                <MudPaper Style="background-color:#34383A;" Class="p-4">
+                    <MudForm Model="@SelectedIdea" @ref="@_Form">
+                        <MudTextField Label="Name"
+                                  @bind-Value="SelectedIdea.Name" For="@(() => SelectedIdea.Name)" Immediate="true" />
+                        <MudTextField Label="Description" Lines="5"
+                                  @bind-Value="SelectedIdea.Description" For="@(() => SelectedIdea.Description)" Immediate="true" />
+                        <MudSelect Label="Status"
+                               @bind-Value="SelectedIdea.Status" For="@(() => SelectedIdea.Status)" Immediate="true">
+                            @foreach (IdeaStatusEnum status in Enum.GetValues(typeof(IdeaStatusEnum)))
+                            {
+                                <MudSelectItem Value="@Convert.ToInt32(status)">@status</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudTextField Label="Keywords"
+                                  @bind-Value="SelectedIdea.Keywords" For="@(() => SelectedIdea.Keywords)" Immediate="true"
+                                  HelperText="Please put ';' at the end of your keywords " />
+                    </MudForm>
+                    <div class="text-end">
+                        <MudButton Style="@($"color:{Colors.Grey.Lighten2};")" OnClick="CancelChange">CANCEL</MudButton>
+                        <MudButton Color="Color.Primary" OnClick="SaveChange">SAVE</MudButton>
+                    </div>
+                </MudPaper>
+            }
+        </MudItem>
+        @if(!IsOutSider)
+        {
+            @* Contents List *@
+            <MudItem xs="6">
+                <MudPaper Height="500px" Style="background-color:#34383A;" Class="p-4">
+                    @if (UserLevel == 10)
+                    {
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="overflow-auto">
+                            <MudButton Class="mb-sm-2" Variant="Variant.Filled" Color="Color.Dark" OnClick="@((e) => AddContent())">Add Content</MudButton>
+                        </MudStack>
+                    }
+                    <MudPaper Height="420px" Style="background-color:#34383A;overflow-y:auto" Elevation="0" Class="w-100">
+                        <ContentComponent contents="Contents" DoShowContent="@((args)=>ShowContent((int)args))"></ContentComponent>
+                    </MudPaper>
+                </MudPaper>
+            </MudItem>
+            @* Contents Display *@
+            <MudItem xs="6">
+                <MudPaper Height="500px" Style="background-color:#34383A;" Class="p-4">
+                    @* Contents Display - ADD MODE *@
+                    @if (DisplayAddContent)
+                    {
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="w-100">
+                            <MudPaper Style="background-color:#34383A;" Elevation="0" Class="w-100">
+                                <AddContentComponent inputContent="inputContent"></AddContentComponent>
+                            </MudPaper>
+                        </MudStack>
+                        <div class="text-end mt-sm-5">
+                            <MudButton Style="@($"color:{Colors.Grey.Lighten2};")" OnClick="CancelAddContent">CANCEL</MudButton>
+                            <MudButton Color="Color.Primary" OnClick="DoAddContent">ADD</MudButton>
+                        </div>
+                    }
+                    @* Contents Display - EDIT MODE *@
+                    @if (DisplayEditContent)
+                    {
+                        <MudStack Row="true" AlignItems="AlignItems.Center" Class="w-100">
+                            <MudPaper Style="background-color:#34383A;" Elevation="0" Class="w-100">
+                                <AddContentComponent inputContent="inputContent"></AddContentComponent>
+                            </MudPaper>
+                        </MudStack>
+                        <div class="text-end mt-sm-5">
+                            <MudButton Style="@($"color:{Colors.Grey.Lighten2};")" OnClick="CancelEditContent">CANCEL</MudButton>
+                            <MudButton Color="Color.Primary" OnClick="SaveEditContent">SAVE</MudButton>
+                        </div>
+                    }
+                    @* Contents Display - DISPLAY DETAIL MODE *@
+                    @if (!DisplayAddContent && !DisplayEditContent)
+                    {
+                        @if (ShowContentId > 0)
+                        {
+                            <ContentDetailComponent theContent="whichContent"></ContentDetailComponent>
+                            @if (UserLevel == 10)
+                            {
+                                <div class="text-end w-100">
+                                    <MudButton Color="Color.Primary" Variant="Variant.Outlined" Class="m-1" OnClick="EditContent">EDIT</MudButton>
+                                    <MudButton Color="Color.Error" Variant="Variant.Filled" Class="m-1" OnClick="DeleteContent">DELETE</MudButton>
+                                </div>
+                            }
+                            <MudDivider Class="my-3" />
+                            <MudStack Style="height:250px;overflow-x:clip;overflow-y:auto;">
+                                <MudPaper Style="background-color:#34383A;" Elevation="0">
+                                    <CommentComponent Users="Users" CurrentUserId=@UserId Comments="Comments" DoEditComment="@((args)=>EditComment((int)args))" DoDeleteComment="@((args)=>DeleteComment((int)args))"></CommentComponent>
+                                </MudPaper>
+                            </MudStack>
+                            <MudStack Row="true" AlignItems="AlignItems.Center" Class="mt-2">
+                                <MudGrid>
+                                    <MudItem xs="10">
+                                        <MudTextField @bind-Value="CommentString" Label="Comment Here" Variant="Variant.Filled" Clearable="true" Immediate="true" Class="detail-description-comment" />
+                                    </MudItem>
+                                    <MudItem xs="2" Class="d-flex align-center">
+                                        @if(!DisplayEditComment) {
+                                            <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Send" Size="Size.Small" OnClick="AddComment" />
+                                        } else {
+                                            <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Cancel" Size="Size.Small" OnClick="CancelEditComment" />
+                                            <MudFab Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Save" Size="Size.Small" OnClick="SaveEditComment" />
+                                        }
+                                    </MudItem>
+                                </MudGrid>
+                            </MudStack>
+                        }
+                    }
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+</MudContainer>
+}

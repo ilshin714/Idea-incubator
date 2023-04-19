@@ -1,0 +1,48 @@
+﻿@using static IdeaIncubatorBlazor.Views.Components.DetailDescription
+
+<MudGrid Class="w-100" xs="12">
+    <MudItem xs="6">
+        <MudText Class="text-center" Style="color:#90A4AE; font-weight:100;">TITLE</MudText>
+    </MudItem>
+    <MudItem xs="4">
+        <MudText Class="text-center" Style="color:#90A4AE; font-weight:100;">DATE</MudText>
+    </MudItem>
+    <MudItem xs="2">
+        <MudText Class="text-center" Style="color:#90A4AE;">LEVEL</MudText>
+    </MudItem>
+</MudGrid>
+
+@if (contents != null)
+{
+    foreach (var content in contents)
+    {
+        <MudButton FullWidth="true" OnClick="@((e)=> ShowContent(content.ContentId))">
+            <MudGrid Class="w-100" >
+                <MudItem xs="6">
+                    <MudText Class="text-start text-nowrap" Style="color:white; font-weight:100;text-overflow: ellipsis;overflow: hidden;">@content.Name</MudText>
+                </MudItem>
+                <MudItem xs="4">
+                    <MudText Class="ml-auto" Style="color:white; font-weight:100;">@content.CreatedDate.ToString("D")</MudText>
+                </MudItem>
+                <MudItem xs="2">
+                    <MudText Style="color:white;">@content.DisclosureLevel</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudButton>
+    }
+}
+
+
+@code {
+
+    [Parameter]
+    public List<Content> ?contents { get; set; }
+    [Parameter]
+    public EventCallback DoShowContent { get; set; }
+
+    private async Task ShowContent(int contentId)
+    {
+        await DoShowContent.InvokeAsync(contentId);
+    } 
+
+}
